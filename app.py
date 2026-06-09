@@ -9,8 +9,11 @@ from pdfmd import pdf_to_markdown, Options
 
 
 logo_image = Image.open("PDFLOGO.jpeg")
-st.set_page_config(page_title="Token Hero", page_icon=logo_image, layout="wide")
-
+st.set_page_config(
+    page_title="Token Hero",  # 👈 Updated to Token Hero
+    page_icon=logo_image,     # 👈 Ensures your custom logo is used
+    layout="wide"
+)
 # 3. Inject custom CSS to hide ONLY the developer toolbar items without breaking the footer
 st.markdown("""
     <style>
@@ -36,7 +39,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("PDF to Markdown Converter")
+st.title("Token Hero - PDF to Markdown Converter")
 st.write("Tokens cost money now, who knew?")
 
 # 1. Multi-file upload configuration (capped at 5)
