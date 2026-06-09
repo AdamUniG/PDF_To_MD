@@ -1,3 +1,4 @@
 streamlit
-markitdown[all]
 pypdf
+python-bidi
+git+https://github.com/M1ck4/pdfmd.git

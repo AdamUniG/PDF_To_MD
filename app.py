@@ -1,13 +1,41 @@
 import streamlit as st
-from markitdown import MarkItDown
 import os
 import io
 import zipfile
-import pypdf # Built-in via markitdown[all] to count PDF pages cleanly
 from PIL import Image
+from converter import advanced_pdf_processor
+import pypdf
+from pdfmd import pdf_to_markdown, Options 
+
 
 logo_image = Image.open("PDFLOGO.jpeg")
-st.set_page_config(page_title="Token Saver", page_icon=logo_image, layout="wide")
+st.set_page_config(page_title="Token Hero", page_icon=logo_image, layout="wide")
+
+# 3. Inject custom CSS to hide ONLY the developer toolbar items without breaking the footer
+st.markdown("""
+    <style>
+        /* Hides the pencil icon, github icon, and manage app button inside the top toolbar */
+        .viewerBadge_container__1QSob, 
+        button[title="Edit in GitHub"],
+        footer,
+        [data-testid="stDecoration"] {
+            display: none !important;
+        }
+        
+        /* Targets the top toolbar header specifically to hide the GitHub link up there */
+        header a[href*="github.com"] {
+            display: none !important;
+        }
+        
+        /* Hides the bottom-right manage app button */
+        iframe[title="Manage app"], 
+        div[data-testid="manage-app-button"],
+        button:has(span:contains("Manage app")) {
+            display: none !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("PDF to Markdown Converter")
 st.write("Tokens cost money now, who knew?")
 
@@ -16,6 +44,14 @@ uploaded_files = st.file_uploader(
     "Drag & Drop your PDFs here", 
     type=["pdf"], 
     accept_multiple_files=True
+)
+
+# Updated to a single-line horizontal radio button selector
+selected_profile = st.radio(
+    "Conversion Profile",
+    options=["Default", "Academic article", "Slides / handouts", "Scan-heavy / OCR-first"],
+    horizontal=True,
+    help="Matches the official pdfmd configurations for handling columns, layouts, and formatting."
 )
 
 if uploaded_files:
@@ -43,10 +79,7 @@ if uploaded_files:
             page_count = len(pdf_reader.pages)
             
             # Execute MarkItDown parsing
-            md = MarkItDown()
-            result = md.convert(temp_filename)
-            md_text = result.text_content
-            
+            md_text = advanced_pdf_processor(temp_filename, profile_name=selected_profile)            
             # Token Math Computations
             # Formula targets 2 visual tiles per page base layout structure plus standard lexical layers
             est_direct_pdf_tokens = (page_count * (258 * 2)) + (page_count * 500)
@@ -109,3 +142,13 @@ if uploaded_files:
             mime="application/zip",
             use_container_width=True
         )
+## --- CUSTOM FOOTER ---
+st.markdown("---")  # Adds a subtle horizontal separator line
+
+# Inject your custom text and credit link at the very bottom
+st.markdown("""
+    <div style='text-align: left; color: #888888; font-size: 14px; padding: 20px 0;'>
+        By <a href='https://github.com/AdamUniG/PDF_To_MD' target='_blank' style='color: #a855f7; text-decoration: none; font-weight: bold;'>Adam Vogel</a>, I like to build things <br>
+        Thanks to <a href='https://github.com/M1ck4/pdfmd' target='_blank' style='color: #a855f7; text-decoration: none; font-weight: bold;'>M1ck4</a> the GOAT
+    </div>
+""", unsafe_allow_html=True)
